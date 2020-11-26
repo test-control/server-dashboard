@@ -1,0 +1,22 @@
+version: "3"
+services:
+  dashboard:
+    build:
+      dockerfile: ./.docker/node/Dockerfile
+      context: ../
+    env_file:
+      - ./.env
+    ports:
+      - "80:3000"
+    volumes:
+      - ./../:/srv/dashboard-app
+    networks:
+      tc-network:
+        ipv4_address: 172.20.0.10
+networks:
+  tc-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.1/16
+          gateway: 172.20.0.1

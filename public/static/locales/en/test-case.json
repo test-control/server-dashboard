@@ -1,0 +1,18 @@
+{
+  "description": "Description",
+  "preconditions": "Preconditions",
+  "steps": "Steps",
+  "testCase": {
+    "updated": "Test case updated."
+  },
+  "precondition": {
+    "created": "Test case precondition created.",
+    "updated": "Test case precondition updated.",
+    "deleted": "Test case precondition deleted."
+  },
+  "step": {
+    "created": "Test case step created.",
+    "updated": "Test case step updated.",
+    "deleted": "Test case step deleted."
+  }
+}
