@@ -9,8 +9,8 @@ import PropTypes from 'prop-types';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import 'draft-js/dist/Draft.css';
 import '../theme/rich-editor.css';
-import { appWithTranslation } from '../i18n'
 import App from 'next/app'
+import {appWithTranslation} from '../i18n'
 
 const cApp = ({ Component, pageProps }) => {
   console.log('sample')
