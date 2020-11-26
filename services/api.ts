@@ -54,7 +54,7 @@ export const apiBackend = {
       delete: async (preconditionId) => {
         return apiErrorHandler(connection.delete<Api.DeleteTestCasePreconditions.ResponseBody>('/test-case-preconditions/' + preconditionId))
       },
-      create: async (testCaseId,data) => {
+      create: async (testCaseId,data)  => {
         return apiErrorHandler(connection.post<Api.CreateTestCasePreconditions.ResponseBody>('/test-cases/' + testCaseId + "/preconditions", data))
       }
     },

@@ -136,12 +136,15 @@ export function EditableList(params: EditableListParams)
      setItemToDelete(null);
    };
 
-   const handleConfirmDeleteItemDialog = () => {
+   const handleConfirmDeleteItemDialog = async() => {
 
-       onDeleteItem(itemToDelete.id).catch(debugError).then(() => {
-         setDeleteItemDialogOpen(false);
-         setItemToDelete(null);
-       })
+     try{
+       await onDeleteItem(itemToDelete.id);
+       setDeleteItemDialogOpen(false);
+       setItemToDelete(null);
+     } catch(err) {
+       debugError(err)
+     }
    }
 
   const onDragStart = () => {
@@ -165,11 +168,15 @@ export function EditableList(params: EditableListParams)
       newItems
     );
 
-     params.changeItemOrder(
-      stateItems[result.source.index].id,
-      stateItems[result.destination.index].id,
-      result.source.index < result.destination.index ? 'down' : 'up'
-    ).catch(debugError);
+    try{
+      await arams.changeItemOrder(
+        stateItems[result.source.index].id,
+        stateItems[result.destination.index].id,
+        result.source.index < result.destination.index ? 'down' : 'up'
+      );
+    } catch(err) {
+      debugError(err);
+    }
   }
 
   const startEditingItem = itemId => {
@@ -189,7 +196,7 @@ export function EditableList(params: EditableListParams)
     setEditItemId(false)
   }
 
-  const saveEditedItem = (itemId : string ) => {
+  const saveEditedItem = async (itemId : string ) => {
       const lsItems = Array.from(params.items);
 
       for(var it of lsItems){
@@ -199,10 +206,15 @@ export function EditableList(params: EditableListParams)
         it.title = editItemText
       }
 
-    params.saveItemTitle(itemId, editItemText).then(() => {
-      setEditItemId(false)
-      setItems(lsItems)
-    }).catch(debugError)
+      try{
+
+        await params.saveItemTitle(itemId, editItemText);
+        setEditItemId(false)
+        setItems(lsItems)
+
+      } catch(err) {
+        debugError(err)
+      }
   }
 
   const onChangeValue = (val, itemId) => {
@@ -210,34 +222,39 @@ export function EditableList(params: EditableListParams)
   }
 
   const onCreateNewItem = async () => {
+
     const lastId = stateItems[stateItems.length - 1]?.id;
 
-    setNewItemText('');
+    try{
+      const newItem = await params.createNewItem(newItemText, lastId)
 
-    const newItem = await params.createNewItem(newItemText, lastId);
+      setNewItemText('');
 
-    const lsItems = Array.from(stateItems);
-    lsItems.push(newItem);
+      const lsItems = Array.from(stateItems);
 
-    setItems(lsItems);
+      lsItems.push(newItem);
+
+      setItems(lsItems);
+    } catch(err) {
+      debugError(err)
+    }
   }
 
   const onDeleteItem = async (itemId) : Promise<void> => {
-    return params.deleteItem(itemId).then(() => {
+    await params.deleteItem(itemId);
 
-      const lsItems = Array.from(stateItems);
-      var i = 0;
+    const lsItems = Array.from(stateItems);
+    var i = 0;
 
-      while( i < lsItems.length){
-        if(lsItems[i].id === itemId){
-          lsItems.splice(i, 1);
-        } else {
-          i++;
-        }
+    while( i < lsItems.length){
+      if(lsItems[i].id === itemId){
+        lsItems.splice(i, 1);
+      } else {
+        i++;
       }
+    }
 
-      setItems(lsItems);
-    });
+    setItems(lsItems);
   }
 
   return  (

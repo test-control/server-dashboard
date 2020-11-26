@@ -91,20 +91,15 @@ function ShowTestCase({testCase, preconditions, steps}) {
   }
 
   const onCreatePreconditionItem = async (itemTitle: string, displayAfter:string) : Promise<IListItem> => {
-    /*const resp = await apiBackend.testCase.preconditions.create(
-      testCase.id,
-      {
-        title: itemTitle,
-        displayAfter: displayAfter
-      }
-    )
+      const resp = await apiResponse(apiBackend.testCase.preconditions.create(
+        testCase.id,
+        {
+          title: itemTitle,
+          displayAfter: displayAfter
+        }
+      ), t('precondition.created'));
 
-    apiResponse(t('precondition.created'))(resp);
-    */
-    return {
-      id: 'asddad',
-      title: 'asdd'
-    }
+      return resp.data;
   }
 
   const onSaveTestCaseStepTitle = (itemId: string, title: string) : Promise<any> => {
