@@ -138,10 +138,10 @@ export function EditableList(params: EditableListParams)
 
    const handleConfirmDeleteItemDialog = () => {
 
-       onDeleteItem(itemToDelete.id);
-
-       setDeleteItemDialogOpen(false);
-       setItemToDelete(null);
+       onDeleteItem(itemToDelete.id).catch(debugError).then(() => {
+         setDeleteItemDialogOpen(false);
+         setItemToDelete(null);
+       })
    }
 
   const onDragStart = () => {
@@ -222,8 +222,8 @@ export function EditableList(params: EditableListParams)
     setItems(lsItems);
   }
 
-  const onDeleteItem = itemId => {
-    params.deleteItem(itemId).catch(debugError).then(() => {
+  const onDeleteItem = async (itemId) : Promise<void> => {
+    return params.deleteItem(itemId).then(() => {
 
       const lsItems = Array.from(stateItems);
       var i = 0;

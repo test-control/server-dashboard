@@ -75,25 +75,19 @@ function ShowTestCase({testCase, preconditions, steps}) {
   }
 
   const onChangePreconditionItemOrder = (itemId: string, displayDestination:string, direction: 'up' | 'down') : Promise<void> => {
-    /*
-    apiBackend.testCase.preconditions.update(
+    return apiResponse(apiBackend.testCase.preconditions.update(
       itemId,
       {
         displayDestination: displayDestination,
         displayMoveDirection: direction
       }
-    ).then(apiResponse(t('precondition.updated')));*/
-    return;
+    ), t('precondition.updated'));
   }
 
   const onDeletePreconditionItem = (itemId: string) : Promise<any> => {
-    /*
-    apiBackend.testCase.preconditions.delete(
+    return apiResponse(apiBackend.testCase.preconditions.delete(
       itemId
-    ).then(apiResponse(t('precondition.deleted')));
-
-    successMessage(t('precondition.deleted'));*/
-    return;
+    ), t('precondition.deleted'));
   }
 
   const onCreatePreconditionItem = async (itemTitle: string, displayAfter:string) : Promise<IListItem> => {
