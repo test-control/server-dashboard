@@ -14,7 +14,6 @@ import {
 } from "@material-ui/core";
 import RootRef from "@material-ui/core/RootRef";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import InboxIcon from "@material-ui/icons/Inbox";
 import EditIcon from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
 import Divider from '@material-ui/core/Divider';
@@ -27,6 +26,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import {debugError} from "../../helpers/logger";
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -63,7 +63,7 @@ const getItems = count =>
     secondary: k % 2 === 0 ? `Whatever for ${k}` : undefined
   }));
 
-const reorder = (list, startIndex, endIndex) => {
+const reorder = (list : Array<IListItem>, startIndex, endIndex) : IListItem[] => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
@@ -84,13 +84,26 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 const getListStyle = isDraggingOver => ({
 });
 
+export interface IListItem {
+  id: string;
+  title: string;
+}
 
-export function EditableList({items, saveItemTitle, changeItemOrder, deleteItem, createNewItem})
+
+export interface EditableListParams {
+  items: Array<IListItem>,
+  saveItemTitle: (itemId: string, title: string) => Promise<void>,
+  changeItemOrder: (itemId: string, displayDestination:string, direction: 'up' | 'down') => Promise<void>,
+  deleteItem: (itemId: string) => Promise<void>,
+  createNewItem: (itemTitle: string, displayAfter: string) => Promise<IListItem>
+}
+
+export function EditableList(params: EditableListParams)
 {
   const classes = useStyles();
 
   const [stateItems, setItems] = useState(
-    () => items
+    () => params.items
   );
 
   const [editItemId, setEditItemId] = useState(
@@ -152,17 +165,17 @@ export function EditableList({items, saveItemTitle, changeItemOrder, deleteItem,
       newItems
     );
 
-    changeItemOrder(
+     params.changeItemOrder(
       stateItems[result.source.index].id,
       stateItems[result.destination.index].id,
       result.source.index < result.destination.index ? 'down' : 'up'
-    );
+    ).catch(debugError);
   }
 
   const startEditingItem = itemId => {
     setEditItemId(itemId)
 
-          for(var it of items){
+          for(var it of params.items){
             if(it.id !== itemId){
               continue;
             }
@@ -176,8 +189,8 @@ export function EditableList({items, saveItemTitle, changeItemOrder, deleteItem,
     setEditItemId(false)
   }
 
-  const saveEditedItem = itemId => {
-      const lsItems = Array.from(items);
+  const saveEditedItem = (itemId : string ) => {
+      const lsItems = Array.from(params.items);
 
       for(var it of lsItems){
         if(it.id !== itemId){
@@ -186,20 +199,22 @@ export function EditableList({items, saveItemTitle, changeItemOrder, deleteItem,
         it.title = editItemText
       }
 
-    saveItemTitle(itemId, editItemText)
-    setEditItemId(false)
-    setItems(lsItems)
+    params.saveItemTitle(itemId, editItemText).then(() => {
+      setEditItemId(false)
+      setItems(lsItems)
+    }).catch(debugError)
   }
 
   const onChangeValue = (val, itemId) => {
     setEditItemText(val.target.value);
   }
+
   const onCreateNewItem = async () => {
     const lastId = stateItems[stateItems.length - 1]?.id;
 
     setNewItemText('');
 
-    const newItem = await createNewItem(newItemText, lastId);
+    const newItem = await params.createNewItem(newItemText, lastId);
 
     const lsItems = Array.from(stateItems);
     lsItems.push(newItem);
@@ -208,21 +223,21 @@ export function EditableList({items, saveItemTitle, changeItemOrder, deleteItem,
   }
 
   const onDeleteItem = itemId => {
-    deleteItem(itemId);
+    params.deleteItem(itemId).catch(debugError).then(() => {
 
+      const lsItems = Array.from(stateItems);
+      var i = 0;
 
-    const lsItems = Array.from(stateItems);
-    var i = 0;
-
-    while( i < lsItems.length){
-      if(lsItems[i].id === itemId){
-        lsItems.splice(i, 1);
-      } else {
-        i++;
+      while( i < lsItems.length){
+        if(lsItems[i].id === itemId){
+          lsItems.splice(i, 1);
+        } else {
+          i++;
+        }
       }
-    }
 
-    setItems(lsItems);
+      setItems(lsItems);
+    });
   }
 
   return  (

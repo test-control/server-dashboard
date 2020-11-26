@@ -8,11 +8,11 @@ import {apiBackend} from "../../services/api";
 import { Map } from 'immutable';
 import { EditableList} from '../../components';
 import { resetServerContext } from "react-beautiful-dnd";
-import PropTypes from 'prop-types'
-import { withTranslation } from '../../i18n'
 import {useSmallNotify} from "../../helpers";
 import {Schemas} from '@test-control/server-api-contracts'
 import React from 'react';
+import {useTranslation} from "react-i18next";
+import {IListItem} from "../../components/grid/editable-list";
 
 const useStyles = makeStyles((theme) => ({
   description: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function ShowTestCase({t, testCase, preconditions, steps}) {
+function ShowTestCase({testCase, preconditions, steps}) {
   const {successMessage, apiResponse} = useSmallNotify();
   Map<Schemas.TestCase>(testCase);
 
@@ -37,6 +37,8 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
       editableTestCase.get('title')
     )
   ];
+
+  const {t} = useTranslation('test-case')
 
   var state;
   const description = editableTestCase.get('description') || '';
@@ -63,7 +65,7 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
     setOnSsrState(false);
   });
 
-  const onSavePreconditionTitle = async (itemId, title) => {
+  const onSavePreconditionTitle = async (itemId, title) : Promise<void> => {
     return apiResponse(apiBackend.testCase.preconditions.update(
       itemId,
       {
@@ -72,7 +74,7 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
     ),t('precondition.updated'));
   }
 
-  const onChangePreconditionItemOrder = (itemId, displayDestination, direction) => {
+  const onChangePreconditionItemOrder = (itemId: string, displayDestination:string, direction: 'up' | 'down') : Promise<void> => {
     /*
     apiBackend.testCase.preconditions.update(
       itemId,
@@ -81,20 +83,21 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
         displayMoveDirection: direction
       }
     ).then(apiResponse(t('precondition.updated')));*/
+    return;
   }
 
-  const onDeletePreconditionItem = (itemId) => {
+  const onDeletePreconditionItem = (itemId: string) : Promise<any> => {
     /*
     apiBackend.testCase.preconditions.delete(
       itemId
     ).then(apiResponse(t('precondition.deleted')));
 
     successMessage(t('precondition.deleted'));*/
+    return;
   }
 
-  const onCreatePreconditionItem = async (itemTitle, displayAfter) => {
-    /*
-    const resp = await apiBackend.testCase.preconditions.create(
+  const onCreatePreconditionItem = async (itemTitle: string, displayAfter:string) : Promise<IListItem> => {
+    /*const resp = await apiBackend.testCase.preconditions.create(
       testCase.id,
       {
         title: itemTitle,
@@ -102,19 +105,25 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
       }
     )
 
-    apiResponse(t('precondition.created'))(resp);*/
+    apiResponse(t('precondition.created'))(resp);
+    */
+    return {
+      id: 'asddad',
+      title: 'asdd'
+    }
   }
 
-  const onSaveTestCaseStepTitle = (itemId, title) => {
+  const onSaveTestCaseStepTitle = (itemId: string, title: string) : Promise<any> => {
   /*  apiBackend.testCase.steps.update(
       itemId,
       {
         title: title
       }
     ).then(apiResponse(t('step.updated')));*/
+    return;
   }
 
-  const onChangeTestCaseStepItemOrder = (itemId, displayDestination, direction) => {
+  const onChangeTestCaseStepItemOrder = (itemId:string, displayDestination:string, direction: 'up' | 'down') : Promise<any> => {
     /*apiBackend.testCase.steps.update(
       itemId,
       {
@@ -122,15 +131,18 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
         displayMoveDirection: direction
       }
     ).then(apiResponse(t('step.updated')));*/
+
+    return
   }
 
-  const onDeleteTestCaseStepItem = (itemId) => {
+  const onDeleteTestCaseStepItem = (itemId: string) : Promise<any> => {
     /*apiBackend.testCase.steps.delete(
       itemId
     ).then(apiResponse(t('step.deleted')));*/
+    return
   }
 
-  const onCreateTestCaseStepItem = async (itemTitle, displayAfter) => {
+  const onCreateTestCaseStepItem = async (itemTitle: string, displayAfter: string) : Promise<IListItem> => {
     /*
     const resp = await apiBackend.testCase.steps.create(
       testCase.id,
@@ -141,6 +153,10 @@ function ShowTestCase({t, testCase, preconditions, steps}) {
     )
 
     apiResponse(t('step.created'))(resp);*/
+    return {
+      id: 'asddd',
+      title: 'xczxc'
+    }
   }
 
     const onSave = () => {
@@ -262,13 +278,8 @@ ShowTestCase.getInitialProps = async ({query}) => {
   return {
     testCase: (await apiBackend.testCase.get(query.id)).data,
     preconditions: sortedPreconditions,
-    steps: sortedSteps,
-    namespacesRequired: ['test-case', 'common']
+    steps: sortedSteps
   };
 }
 
-ShowTestCase.propTypes = {
-  t: PropTypes.func.isRequired,
-}
-
-export default withTranslation('test-case')(ShowTestCase as any);
+export default ShowTestCase;
