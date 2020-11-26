@@ -151,7 +151,7 @@ export function EditableList(params: EditableListParams)
     setDisplayIcons(false);
   }
 
-   const onDragEnd = (result) => {
+   const onDragEnd = async (result) => {
     setDisplayIcons(true);
 
     if (!result.destination) {
@@ -169,7 +169,7 @@ export function EditableList(params: EditableListParams)
     );
 
     try{
-      await arams.changeItemOrder(
+      await params.changeItemOrder(
         stateItems[result.source.index].id,
         stateItems[result.destination.index].id,
         result.source.index < result.destination.index ? 'down' : 'up'

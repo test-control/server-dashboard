@@ -103,76 +103,68 @@ function ShowTestCase({testCase, preconditions, steps}) {
   }
 
   const onSaveTestCaseStepTitle = (itemId: string, title: string) : Promise<any> => {
-  /*  apiBackend.testCase.steps.update(
+   return apiResponse(apiBackend.testCase.steps.update(
       itemId,
       {
         title: title
       }
-    ).then(apiResponse(t('step.updated')));*/
-    return;
+    ), t('step.updated'));
   }
 
   const onChangeTestCaseStepItemOrder = (itemId:string, displayDestination:string, direction: 'up' | 'down') : Promise<any> => {
-    /*apiBackend.testCase.steps.update(
+    return apiResponse(apiBackend.testCase.steps.update(
       itemId,
       {
         displayDestination: displayDestination,
         displayMoveDirection: direction
       }
-    ).then(apiResponse(t('step.updated')));*/
-
-    return
+    ), t('step.updated'));
   }
 
   const onDeleteTestCaseStepItem = (itemId: string) : Promise<any> => {
-    /*apiBackend.testCase.steps.delete(
+    return apiResponse(apiBackend.testCase.steps.delete(
       itemId
-    ).then(apiResponse(t('step.deleted')));*/
-    return
+    ), t('step.deleted'));
   }
 
   const onCreateTestCaseStepItem = async (itemTitle: string, displayAfter: string) : Promise<IListItem> => {
-    /*
-    const resp = await apiBackend.testCase.steps.create(
+
+    const resp = await apiResponse(apiBackend.testCase.steps.create(
       testCase.id,
       {
         title: itemTitle,
         displayAfter: displayAfter
       }
-    )
+    ), t('step.created'));
 
-    apiResponse(t('step.created'))(resp);*/
-    return {
-      id: 'asddd',
-      title: 'xczxc'
-    }
+    return resp.data
   }
 
-    const onSave = () => {
-    /*
+    const onSave = async () => {
       const content = JSON.stringify(convertToRaw(
         editorState.getCurrentContent()
       ));
 
       setEditableTestCase(editableTestCase.set('description', content));
 
-      apiBackend.testCase.update(
+      await apiResponse(apiBackend.testCase.update(
         testCase.id,
         {
           description: content
         }
-      ).then(apiResponse(t('testCase.updated')));*/
+      ), t('testCase.updated'));
     }
 
-    const onChangePageTitle = (pageTitle) => {
-/*
+    const onChangePageTitle = async (pageTitle) => {
+
+      await apiResponse(apiBackend.testCase.update(
+        testCase.id,
+        {
+          title: pageTitle
+        }
+      ), t('testCase.updated'));
+
       setEditableTestCase(editableTestCase.set('title', pageTitle));
-        apiBackend.testCase.update(
-          testCase.id,
-          {
-            title: pageTitle
-          }
-      ).then(apiResponse(t('testCase.updated')), apiResponse(t('testCase.createFail')));*/
     }
 
     return <Layout breadcrumbs={breadcrumbs} pageTitle={editableTestCase.get('title')} pageTitleEditable={true} onChangePageTitle={onChangePageTitle}>
