@@ -77,7 +77,7 @@ function handleClick(event) {
 }
 
 
-function Layout({children, pageButtons = [], breadcrumbs, pageTitle, onChangePageTitle, pageTitleEditable}) {
+function Layout({children, pageButtons = [], breadcrumbs, pageTitle, onChangePageTitle=null, pageTitleEditable}) {
   const classes = useStyles();
 
 
