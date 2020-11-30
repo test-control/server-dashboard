@@ -38,6 +38,9 @@ export const apiBackend = {
     },
     get: async(projectId) => {
       return apiErrorHandler(connection.get<Api.GetProject.ResponseBody>('/projects/' + projectId));
+    },
+    getTreeRoot: async(projectId) => {
+      return apiErrorHandler(connection.get<Api.GetProjectTreeRoot.ResponseBody>('/projects/' + projectId + '/tree-root'))
     }
   },
   testCase: {
@@ -74,6 +77,11 @@ export const apiBackend = {
       create: async (stepId,data) => {
         return apiErrorHandler(connection.post<Api.CreateTestCaseSteps.ResponseBody>('/test-cases/' + stepId + "/steps", data))
       }
+    }
+  },
+  trees: {
+    get: async (treeId) => {
+      return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId))
     }
   }
 }

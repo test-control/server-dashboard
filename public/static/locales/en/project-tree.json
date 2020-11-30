@@ -1,0 +1,13 @@
+{
+  "pageTitle": "Project '{{project.title}}' tree",
+  "menu": {
+    "newFolder": "New folder",
+    "createTestCase": "Create TestCase"
+  },
+  "search": "Search",
+  "leaves": {
+    "elements": "Elements",
+    "createdAt": "Created at",
+    "actions": "Actions"
+  }
+}

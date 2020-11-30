@@ -2,7 +2,7 @@ import {apiBackend} from "../../../services/api";
 import {getApiResponseData} from "../../../helpers/api-response-getter";
 import {Schemas} from '@test-control/server-api-contracts'
 import Layout from "../../../components/layout";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {routes} from "../../../lib/breadcrumbs";
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -38,9 +38,12 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import DescriptionIcon from '@material-ui/icons/Description';
 import PermIdentityIcon from '@material-ui/icons/PermIdentity';
+import {useTranslation} from "react-i18next";
+import {useSmallNotify} from "../../../helpers";
 
 interface TreeParams {
-  project: Schemas.Project
+  project: Schemas.Project,
+  projectTreeRoot: Schemas.Tree
 }
 
 const breadcrumbs = [
@@ -141,9 +144,21 @@ function ListItemLink(props) {
 }
 
 function Tree(params: TreeParams) {
+  const {successMessage, apiResponse} = useSmallNotify();
 
+  const {t} = useTranslation(['project-tree'])
   const classes = useStyles();
-  const pageTitle = `Project '${params.project.title}' tree`
+  const pageTitle = t('pageTitle', {
+    project: params.project
+  })
+
+  const [treeLeaves, setTreeLeaves] = useState<Schemas.Tree[]>([])
+
+  useEffect(() => {
+    apiBackend.trees.get(params.projectTreeRoot.id).then((res) => {
+      setTreeLeaves(res.data)
+    })
+  })
 
   return (
     <Layout breadcrumbs={breadcrumbs} pageTitle={pageTitle} pageTitleEditable={false}>
@@ -156,13 +171,13 @@ function Tree(params: TreeParams) {
                 <ListItemIcon>
                   <CreateNewFolderIcon />
                 </ListItemIcon>
-                <ListItemText primary="New Folder" />
+                <ListItemText primary={t('menu.newFolder')} />
               </ListItem>
               <ListItem button>
                 <ListItemIcon>
                   <ListAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Create TestCase" />
+                <ListItemText primary={t('menu.createTestCase')} />
               </ListItem>
             </List>
             </Box>
@@ -173,7 +188,7 @@ function Tree(params: TreeParams) {
                 <InputBase
                   id="input-with-icon-adornment"
                   fullWidth
-                  placeholder="Search"
+                  placeholder={t('search')}
                   className={classes.searchInputText}
                   startAdornment={
                     <InputAdornment position="start">
@@ -193,7 +208,32 @@ function Tree(params: TreeParams) {
                 </Link>
               </Breadcrumbs>
             </Box>
-
+            <Box className={classes.fileManagerRow}>
+              <TableContainer>
+                <Table aria-label="simple table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell className={classes.folderRowCell}>Folder name</TableCell>
+                      <TableCell align="center" className={classes.folderRowCell}>{t('leaves.elements')}</TableCell>
+                      <TableCell align="center" className={classes.folderRowCell}>{t('menu.createdAt')}</TableCell>
+                      <TableCell align="center" className={classes.folderRowCell}>{t('menu.actions')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {treeLeaves.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell component="th" scope="row" className={classes.folderRowTitle + ' ' + classes.folderRowCell}>
+                          <FolderIcon  className={classes.folderRowTitleIcon}/> <p>{row.title}</p>
+                        </TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>-</TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>-</TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>actions</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
           </Grid>
         </Grid>
       </Paper>
@@ -203,10 +243,13 @@ function Tree(params: TreeParams) {
 
 Tree.getInitialProps = async ({query}) => {
 
-  const project =  await apiBackend.project.get(query.projectId)
+  const projectId = query.projectId;
+  const project = await apiBackend.project.get(projectId)
+  const projectTreeRoot =  await apiBackend.project.getTreeRoot(projectId)
 
   return {
-    project: getApiResponseData<Schemas.Project>(project)
+    project: getApiResponseData<Schemas.Project>(project),
+    projectTreeRoot: getApiResponseData<Schemas.Tree>(projectTreeRoot)
   }
 }
 

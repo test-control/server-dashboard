@@ -13,7 +13,6 @@ import App from 'next/app'
 import {appWithTranslation} from '../i18n'
 
 const cApp = ({ Component, pageProps }) => {
-  console.log('sample')
     React.useEffect(() => {
       const jssStyles = document.querySelector('#jss-server-side');
       if (jssStyles) {
