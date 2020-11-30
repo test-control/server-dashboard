@@ -253,11 +253,12 @@ ShowTestCase.getInitialProps = async ({query}) => {
   const steps = (await apiBackend.testCase.steps.get(query.id)).data;
   const sortedPreconditions = sortDisplayAfter(preconditions);
   const sortedSteps = sortDisplayAfter(steps);
+  const testCase = await apiBackend.testCase.get(query.id);
 
   resetServerContext();
 
   return {
-    testCase: (await apiBackend.testCase.get(query.id)).data,
+    testCase: ("data" in testCase)? testCase.data : null,
     preconditions: sortedPreconditions,
     steps: sortedSteps
   };

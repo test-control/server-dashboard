@@ -35,6 +35,9 @@ export const apiBackend = {
           page: page,
           perPage: perPage
       }))
+    },
+    get: async(projectId) => {
+      return apiErrorHandler(connection.get<Api.GetProject.ResponseBody>('/projects/' + projectId));
     }
   },
   testCase: {
