@@ -1,0 +1,12 @@
+{
+  "common": {
+    "create": "Create",
+    "cancel": "Cancel"
+  },
+  "createProjectTreeLeaf": {
+    "folderName": "Folder name",
+    "title": "New folder",
+    "description": "Creating new folder",
+    "created": "Folder created"
+  }
+}
