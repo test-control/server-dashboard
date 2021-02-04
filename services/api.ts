@@ -80,14 +80,20 @@ export const apiBackend = {
     }
   },
   trees: {
-    get: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
-      return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId, {
+    get: async (treeId) => {
+      return apiErrorHandler(connection.get<Api.GetTree.ResponseBody>('/trees/' + treeId))
+    },
+    getLeaves: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
+      return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId + '/leaves', {
         page: pageNumber || 0,
         perPage: rowsPerPage || 10
       }))
     },
     create: async (treeId, data) => {
       return apiErrorHandler(connection.post<Api.CreateTreeLeaf.ResponseBody>('/trees/' + treeId, data))
+    },
+    getRootPath: async(leafId) => {
+      return apiErrorHandler(connection.get<Api.GetTreeRootPath.ResponseBody>('/trees/' + leafId + '/root-path'))
     }
   }
 }
