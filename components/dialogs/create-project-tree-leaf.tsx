@@ -16,6 +16,7 @@ export interface CreateProjectTreeLeafProps
   opened: boolean;
   handleClose: () => void;
   treeLeafId: string;
+  onFolderCreated?: () => void;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -45,6 +46,10 @@ export default function CreateProjectTreeLeafDialog(props : CreateProjectTreeLea
     ), t('createProjectTreeLeaf.created'))
 
     closeModal();
+
+    if (props.onFolderCreated){
+      props.onFolderCreated();
+    }
   }
 
   return (
