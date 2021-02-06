@@ -1,12 +1,19 @@
 {
   "common": {
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "createAndEditing": "Create and start editing"
   },
   "createProjectTreeLeaf": {
     "folderName": "Folder name",
     "title": "New folder",
     "description": "Creating new folder",
     "created": "Folder created"
+  },
+  "createTestCaseLeaf": {
+    "title": "New test case",
+    "testCaseTitle": "Test case title",
+    "description": "Creating new test case",
+    "created": "TestCase created"
   }
 }

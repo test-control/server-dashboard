@@ -44,6 +44,9 @@ export const apiBackend = {
     }
   },
   testCase: {
+    create: async (data: Api.CreateTestCase.RequestBody) => {
+      return apiErrorHandler(connection.post<Api.CreateTestCase.ResponseBody>('/test-cases', data));
+    },
     get: async (testCaseId) => {
       return apiErrorHandler(connection.get<Api.GetTestCase.ResponseBody>('/test-cases/' + testCaseId))
     },
@@ -85,6 +88,12 @@ export const apiBackend = {
     },
     getLeaves: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
       return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId + '/leaves', {
+        page: pageNumber || 0,
+        perPage: rowsPerPage || 10
+      }))
+    },
+    getTestCases: async(treeId, pageNumber?:number, rowsPerPage?: number) => {
+      return apiErrorHandler(connection.get<Api.ListTreeTestCases.ResponseBody>('/trees/' + treeId + '/test-cases', {
         page: pageNumber || 0,
         perPage: rowsPerPage || 10
       }))
