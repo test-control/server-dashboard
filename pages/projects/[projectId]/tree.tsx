@@ -186,7 +186,7 @@ function Tree(params: TreeParams, el?) {
   const [testCases, setTestCases] = useState<Schemas.TestCase[]>([])
   const [testCasesPage, setTestCasesPage] = useState<number>(1)
   const [testCasesShowMore, setTestCasesShowMore] = useState<boolean>(false)
-  const testCasesLimit = 2;
+  const testCasesLimit = 20;
 
   const [folderRowsPerPage, setFolderRowsPerPage] = React.useState(10);
   const [folderRowsPage, setFolderRowsPage] = React.useState(0)
