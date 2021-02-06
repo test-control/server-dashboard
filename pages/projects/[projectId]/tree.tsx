@@ -17,6 +17,7 @@ import ListAltIcon from '@material-ui/icons/ListAlt';
 import Box from '@material-ui/core/Box';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import HomeIcon from '@material-ui/icons/Home';
+import SearchIcon from '@material-ui/icons/Search';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -27,18 +28,21 @@ import TablePagination from '@material-ui/core/TablePagination';
 import {useTranslation} from "react-i18next";
 import {useSmallNotify} from "../../../helpers";
 import CreateProjectTreeLeafDialog from "../../../components/dialogs/create-project-tree-leaf";
+import CreateTestCaseLeafDialog from "../../../components/dialogs/create-test-case-leaf";
+import FormControl from "@material-ui/core/FormControl";
+import {InputBase, ListItemSecondaryAction} from "@material-ui/core";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 import {ALink} from "../../../components/link";
+import Dialog from "@material-ui/core/Dialog";
+import RootRef from "@material-ui/core/RootRef";
+import ReorderIcon from "@material-ui/icons/Reorder";
 
 interface TreeParams {
   project: Schemas.Project,
   selectedLeaf: Schemas.Tree
 }
-
-const breadcrumbs = [
-  routes.mainPage(),
-  //@todo
-  //add breadcrumbs here
-];
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -70,10 +74,22 @@ const useStyles = makeStyles((theme) => ({
     height: '2px'
   },
   breadCrumbs: {
-    fontSize: "18px"
+    fontSize: "13px"
+  },
+  breadCrumbsAHome: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  folderName: {
+    color: "#545454"
+  },
+  breadCrumbsA: {
+    color: "#bbbbbb"
   },
   breadCrumbsHome: {
-    fontSize: "20px"
+    fontSize: "16px",
+    color: "#bbbbbb"
   },
   breadCrumbsContainer: {
     borderTop: "2px solid #c0c0c01a",
@@ -150,11 +166,27 @@ function Tree(params: TreeParams, el?) {
     project: params.project
   })
 
+  const breadcrumbs = [
+    routes.mainPage(),
+    routes.projects.list(),
+    routes.projects.tree(
+      params.project.id
+    )
+    //@todo
+    //add breadcrumbs here
+  ];
+
   const [creatingFolder, setCreatingFolder] = useState<boolean>(false)
+  const [creatingTestCase, setCreatingTestCaseFolder] = useState<boolean>(false)
   const [currentLeaf, setCurrentLeaf] = useState<Schemas.Tree>(params.selectedLeaf)
   const [treeLeaves, setTreeLeaves] = useState<Schemas.Tree[]>([])
   const [treeBreadcrumbs, setTreeBreadcrumbs] = useState<BreadCrumbEntry[]>([])
   const [treeLeavesCount, setTreeLeavesCount] = useState<number>(0)
+
+  const [testCases, setTestCases] = useState<Schemas.TestCase[]>([])
+  const [testCasesPage, setTestCasesPage] = useState<number>(1)
+  const [testCasesShowMore, setTestCasesShowMore] = useState<boolean>(false)
+  const testCasesLimit = 2;
 
   const [folderRowsPerPage, setFolderRowsPerPage] = React.useState(10);
   const [folderRowsPage, setFolderRowsPage] = React.useState(0)
@@ -175,20 +207,54 @@ function Tree(params: TreeParams, el?) {
   const goToLeaf = (leaf) => {
     setCurrentLeaf(leaf);
     setFolderRowsPage(0);
-    reloadFolders(0);
+    reloadFolders(0, folderRowsPerPage, leaf.id);
 
   }
 
-  const reloadFolders = (page?:number, perPage?: number) => {
+  const reloadTestCases = async (leafId: string) => {
+    setTestCasesPage(1);
+
+    const response = await apiBackend.trees.getTestCases(leafId, testCasesPage, testCasesLimit);
+
+    if(response.meta.lastPage > 1){
+      setTestCasesShowMore(true);
+    } else {
+      setTestCasesShowMore(false);
+    }
+
+    setTestCases(response.data);
+  }
+
+  const loadMoreTestCases = async() => {
+    const nextPage = testCasesPage + 1;
+    setTestCasesPage(nextPage)
+
+    const response = await apiBackend.trees.getTestCases(currentLeaf.id, nextPage, testCasesLimit);
+
+    if(response.meta.lastPage > nextPage){
+      setTestCasesShowMore(true);
+    } else {
+      setTestCasesShowMore(false);
+    }
+
+    setTestCases(testCases.concat(response.data));
+  }
+
+  const reloadFolders = (page?:number, perPage?: number, leafNumber?: string) => {
+
+    const leafId = leafNumber ? leafNumber : currentLeaf.id;
+
+    reloadTestCases(leafId);
+
     apiBackend.trees.getLeaves(
-      currentLeaf.id,
+      leafId,
       (typeof page !== undefined ? page : folderRowsPage) + 1,
       typeof perPage !== undefined? perPage : folderRowsPerPage
     ).then((res) => {
       setTreeLeaves(res.data)
       setTreeLeavesCount(res.meta.total)
-    }).then(() => {
-      apiBackend.trees.getRootPath(currentLeaf.id).then((res) => {
+    }).then((res) => {
+      apiBackend.trees.getRootPath(leafId).then((res) => {
         const newBreadCrumbs : Array<BreadCrumbEntry> = [];
         let lId = 1;
 
@@ -242,7 +308,7 @@ function Tree(params: TreeParams, el?) {
                 </ListItemIcon>
                 <ListItemText primary={t('menu.newFolder')} />
               </ListItem>
-              <ListItem button>
+              <ListItem button onClick={() => setCreatingTestCaseFolder(true)}>
                 <ListItemIcon>
                   <ListAltIcon />
                 </ListItemIcon>
@@ -257,14 +323,14 @@ function Tree(params: TreeParams, el?) {
                 {treeBreadcrumbs.map((row) => {
                     if(row.type === 'home') {
                       return (
-                        <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.tree.id}`} key={row.id}>
+                        <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.tree.id}`} key={row.id} className={classes.breadCrumbsAHome}>
                           <HomeIcon className={classes.breadCrumbsHome}/>
                         </ALink>
                       )
                     }
 
                     return (
-                      <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.tree.id}`} key={row.id}>
+                      <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.tree.id}`} key={row.id} className={classes.breadCrumbsA}>
                         {row.tree.title}
                       </ALink>
                     )
@@ -288,7 +354,7 @@ function Tree(params: TreeParams, el?) {
                       <TableRow hover key={row.id}>
                         <TableCell component="th" scope="row" className={classes.folderRowTitle + ' ' + classes.folderRowCell}>
                           <FolderIcon  className={classes.folderRowTitleIcon}/>
-                          <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.id}`}>
+                          <ALink href={ `/projects/${params.project.id}/tree?leaf=${row.id}`} className={classes.folderName}>
                             <p>{row.title}</p>
                           </ALink>
                         </TableCell>
@@ -313,9 +379,53 @@ function Tree(params: TreeParams, el?) {
           </Grid>
         </Grid>
       </Paper>
+
+      <Paper className={classes.container}>
+        <DragDropContext>
+          <Droppable droppableId="droppable">
+            {(provided, snapshot) => (
+              <RootRef rootRef={provided.innerRef}>
+                <List>
+                  {testCases.map((item, index) => (
+
+                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                      {(provided, snapshot) => (
+                        <ListItem
+                          ContainerComponent="li"
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <ListItemIcon>
+                            <ReorderIcon />
+                          </ListItemIcon>
+                          <ListItemText>
+                            {item.title}
+                          </ListItemText>
+                        </ListItem>
+                      )}
+                    </Draggable>
+                  ))}
+                </List>
+              </RootRef>
+            )}
+          </Droppable>
+        </DragDropContext>
+        {testCasesShowMore &&
+        <Box>
+          <a onClick={loadMoreTestCases}>Load more</a>
+        </Box>
+        }
+      </Paper>
       <CreateProjectTreeLeafDialog
         opened={creatingFolder}
         handleClose={() => setCreatingFolder(false)}
+        treeLeafId={currentLeaf.id}
+        onFolderCreated={reloadFolders}
+      />
+      <CreateTestCaseLeafDialog
+        opened={creatingTestCase}
+        handleClose={() => setCreatingTestCaseFolder(false)}
         treeLeafId={currentLeaf.id}
         onFolderCreated={reloadFolders}
       />
