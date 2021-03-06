@@ -113,7 +113,7 @@ function ProjectsIndex(props) {
                 style={{maxWidth: columns[1].width, width: columns[1].width}}
                 align={columns[1].align}
               >
-                <ALink href={'/projects/' + row.id}>
+                <ALink href={'/projects/' + row.id + '/tree'}>
                   {row.title}
                 </ALink>
               </TableCell>

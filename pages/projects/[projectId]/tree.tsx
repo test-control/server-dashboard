@@ -33,7 +33,7 @@ import FormControl from "@material-ui/core/FormControl";
 import {InputBase, ListItemSecondaryAction} from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import {ALink} from "../../../components/link";
 import Dialog from "@material-ui/core/Dialog";
 import RootRef from "@material-ui/core/RootRef";
@@ -46,6 +46,10 @@ interface TreeParams {
 
 const useStyles = makeStyles((theme) => ({
   container: {
+    padding: '20px 0'
+  },
+  testCasesContainer: {
+    borderTop: '1px solid #f3f3f3',
     padding: '20px 0'
   },
   subContainer: {
@@ -143,6 +147,16 @@ const useStyles = makeStyles((theme) => ({
   },
   tabsContainer: {
     flexGrow: 1
+  },
+  loadMoreTestCases:{
+    width: '100%',
+    textAlign: 'center',
+    padding: '10px 0',
+    cursor: 'pointer',
+    color: '#5677bb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 }));
 
@@ -169,11 +183,13 @@ function Tree(params: TreeParams, el?) {
   const breadcrumbs = [
     routes.mainPage(),
     routes.projects.list(),
+    routes.projects.dashboard(
+      params.project.id,
+      params.project.title
+    ),
     routes.projects.tree(
       params.project.id
     )
-    //@todo
-    //add breadcrumbs here
   ];
 
   const [creatingFolder, setCreatingFolder] = useState<boolean>(false)
@@ -190,6 +206,20 @@ function Tree(params: TreeParams, el?) {
 
   const [folderRowsPerPage, setFolderRowsPerPage] = React.useState(10);
   const [folderRowsPage, setFolderRowsPage] = React.useState(0)
+
+  const onTestCaseDragEnd = async (result) => {
+    const fromId = result.draggableId;
+    const toId = testCases[result.destination.index].id;
+
+    await apiBackend.testCase.move(
+      fromId,
+      {
+        displayAfter: toId
+      }
+    )
+
+    await reloadAllTestCases();
+  }
 
   const handleFoldersChangePage = (event, newPage) => {
     setFolderRowsPage(newPage);
@@ -211,10 +241,21 @@ function Tree(params: TreeParams, el?) {
 
   }
 
-  const reloadTestCases = async (leafId: string) => {
-    setTestCasesPage(1);
+  const reloadAllTestCases = async() => {
+    const response = await apiBackend.trees.getTestCases(
+      currentLeaf.id,
+      0,
+      testCases.length
+    )
 
-    const response = await apiBackend.trees.getTestCases(leafId, testCasesPage, testCasesLimit);
+    setTestCases(response.data);
+  }
+
+  const reloadTestCases = async (leafId: string) => {
+    const newPage =  1;
+    setTestCasesPage(newPage);
+
+    const response = await apiBackend.trees.getTestCases(leafId, newPage, testCasesLimit);
 
     if(response.meta.lastPage > 1){
       setTestCasesShowMore(true);
@@ -380,8 +421,8 @@ function Tree(params: TreeParams, el?) {
         </Grid>
       </Paper>
 
-      <Paper className={classes.container}>
-        <DragDropContext>
+      <Paper className={classes.testCasesContainer}>
+        <DragDropContext onDragEnd={onTestCaseDragEnd}>
           <Droppable droppableId="droppable">
             {(provided, snapshot) => (
               <RootRef rootRef={provided.innerRef}>
@@ -400,12 +441,13 @@ function Tree(params: TreeParams, el?) {
                             <ReorderIcon />
                           </ListItemIcon>
                           <ListItemText>
-                            {item.title}
+                            <ALink href={'/test-cases/' + item.id}>{item.title}</ALink>
                           </ListItemText>
                         </ListItem>
                       )}
                     </Draggable>
                   ))}
+                  {provided.placeholder}
                 </List>
               </RootRef>
             )}
@@ -413,7 +455,7 @@ function Tree(params: TreeParams, el?) {
         </DragDropContext>
         {testCasesShowMore &&
         <Box>
-          <a onClick={loadMoreTestCases}>Load more</a>
+          <a onClick={loadMoreTestCases} className={classes.loadMoreTestCases}><MoreHorizIcon/>&nbsp;Load more</a>
         </Box>
         }
       </Paper>
