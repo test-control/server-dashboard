@@ -23,20 +23,43 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function ShowTestCase({testCase, preconditions, steps}) {
+function ShowTestCase({testCase, preconditions, steps, project, treeLeaf}) {
   const {successMessage, apiResponse} = useSmallNotify();
   Map<Schemas.TestCase>(testCase);
 
   const [editableTestCase, setEditableTestCase] = React.useState<Map<string, string>>(
     () => Map(testCase),
   );
-  const breadcrumbs = [
-    routes.mainPage(),
-    routes.testCases.show(
+  const breadcrumbs = () => {
+    const brd = [
+      routes.mainPage(),
+      routes.projects.list(),
+      routes.projects.dashboard(
+        project.id,
+        project.title
+      ),
+    ];
+
+    if(treeLeaf.title !== "root") {
+      brd.push(routes.projects.treeLeaf(
+        project.id,
+        treeLeaf.id,
+        treeLeaf.title
+      ))
+    } else {
+      brd.push(routes.projects.tree(
+        project.id
+      ))
+    }
+
+    brd.push(routes.testCases.show(
       editableTestCase.get('id'),
       editableTestCase.get('title')
-    )
-  ];
+    ))
+
+    return brd;
+  }
+
 
   const {t} = useTranslation('test-case')
 
@@ -167,7 +190,7 @@ function ShowTestCase({testCase, preconditions, steps}) {
       setEditableTestCase(editableTestCase.set('title', pageTitle));
     }
 
-    return <Layout breadcrumbs={breadcrumbs} pageTitle={editableTestCase.get('title')} pageTitleEditable={true} onChangePageTitle={onChangePageTitle}>
+    return <Layout breadcrumbs={breadcrumbs()} pageTitle={editableTestCase.get('title')} pageTitleEditable={true} onChangePageTitle={onChangePageTitle}>
     <PageSection title={t('description')} className={classes.description}>
      {!onSsrState &&
      <div className={classes.descriptionContent}>
@@ -254,13 +277,17 @@ ShowTestCase.getInitialProps = async ({query}) => {
   const sortedPreconditions = sortDisplayAfter(preconditions);
   const sortedSteps = sortDisplayAfter(steps);
   const testCase = await apiBackend.testCase.get(query.id);
+  const project = await apiBackend.trees.getProject(testCase.data.treeId);
+  const treeLeaf = await apiBackend.trees.get(testCase.data.treeId);
 
   resetServerContext();
 
   return {
-    testCase: ("data" in testCase)? testCase.data : null,
+    testCase: testCase.data,
     preconditions: sortedPreconditions,
-    steps: sortedSteps
+    steps: sortedSteps,
+    project: project.data,
+    treeLeaf: treeLeaf.data
   };
 }
 
