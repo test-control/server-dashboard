@@ -48,10 +48,13 @@ export const apiBackend = {
       return apiErrorHandler(connection.post<Api.CreateTestCase.ResponseBody>('/test-cases', data));
     },
     get: async (testCaseId) => {
-      return apiErrorHandler(connection.get<Api.GetTestCase.ResponseBody>('/test-cases/' + testCaseId))
+      return apiErrorHandler(connection.get<Api.GetTestCase.ApplicationJson200ResponseBody>('/test-cases/' + testCaseId))
     },
     update: async (testCaseId, data) => {
       return apiErrorHandler(connection.patch<Api.UpdateTestCases.ResponseBody>('/test-cases/' + testCaseId, data))
+    },
+    move: async (testCaseId, data) => {
+      return apiErrorHandler(connection.post<Api.MoveTestCase.ResponseBody>('/test-cases/' + testCaseId + '/move', data))
     },
     preconditions: {
       update: async(preconditionId, data) => {
@@ -84,7 +87,7 @@ export const apiBackend = {
   },
   trees: {
     get: async (treeId) => {
-      return apiErrorHandler(connection.get<Api.GetTree.ResponseBody>('/trees/' + treeId))
+      return apiErrorHandler(connection.get<Api.GetTree.ApplicationJson200ResponseBody>('/trees/' + treeId))
     },
     getLeaves: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
       return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId + '/leaves', {
@@ -103,6 +106,9 @@ export const apiBackend = {
     },
     getRootPath: async(leafId) => {
       return apiErrorHandler(connection.get<Api.GetTreeRootPath.ResponseBody>('/trees/' + leafId + '/root-path'))
+    },
+    getProject: async(leafId) => {
+      return apiErrorHandler(connection.get<Api.GetTreeGetProject.ApplicationJson200ResponseBody>('/trees/' + leafId + '/get-project'))
     }
   }
 }
