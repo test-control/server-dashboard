@@ -299,6 +299,18 @@ function Tree(params: TreeParams, el?) {
         const newBreadCrumbs : Array<BreadCrumbEntry> = [];
         let lId = 1;
 
+        res.data.sort((a: Schemas.Tree, b:Schemas.Tree) : number => {
+          if(a.treePath < b.treePath) {
+            return - 1;
+          }
+
+          if(a.treePath > b.treePath){
+            return 1;
+          }
+
+          return 0
+        });
+
         for(var leaf of res.data) {
           if(newBreadCrumbs.length == 0 ){
             newBreadCrumbs.push({
