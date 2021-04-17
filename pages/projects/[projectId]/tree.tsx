@@ -391,7 +391,7 @@ function Tree(params: TreeParams, el?) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {treeLeaves.map((row) => (
+                    {treeLeaves.map((row: Schemas.Tree) => (
                       <TableRow hover key={row.id}>
                         <TableCell component="th" scope="row" className={classes.folderRowTitle + ' ' + classes.folderRowCell}>
                           <FolderIcon  className={classes.folderRowTitleIcon}/>
@@ -400,7 +400,7 @@ function Tree(params: TreeParams, el?) {
                           </ALink>
                         </TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>{row.elementsAmount}</TableCell>
-                        <TableCell align="center" className={classes.folderRowCell}>-</TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>{row.createdAt}</TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>actions</TableCell>
                       </TableRow>
                     ))}
