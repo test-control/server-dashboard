@@ -399,7 +399,7 @@ function Tree(params: TreeParams, el?) {
                             <p>{row.title}</p>
                           </ALink>
                         </TableCell>
-                        <TableCell align="center" className={classes.folderRowCell}>-</TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>{row.elementsAmount}</TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>-</TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>actions</TableCell>
                       </TableRow>
