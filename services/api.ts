@@ -89,6 +89,9 @@ export const apiBackend = {
     get: async (treeId) => {
       return apiErrorHandler(connection.get<Api.GetTree.ApplicationJson200ResponseBody>('/trees/' + treeId))
     },
+    update: async (treeId: string, data: Api.UpdateTreeLeaf.RequestBody) => {
+      return apiErrorHandler(connection.patch<Api.UpdateTreeLeaf.ApplicationJson200ResponseBody>('/trees/' + treeId, data))
+    },
     getLeaves: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
       return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId + '/leaves', {
         page: pageNumber || 0,
