@@ -17,7 +17,6 @@ import ListAltIcon from '@material-ui/icons/ListAlt';
 import Box from '@material-ui/core/Box';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import HomeIcon from '@material-ui/icons/Home';
-import SearchIcon from '@material-ui/icons/Search';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -28,16 +27,15 @@ import TablePagination from '@material-ui/core/TablePagination';
 import {useTranslation} from "react-i18next";
 import {useSmallNotify} from "../../../helpers";
 import CreateProjectTreeLeafDialog from "../../../components/dialogs/create-project-tree-leaf";
+import EditProjectTreeLeafDialog from "../../../components/dialogs/edit-project-tree-leaf";
 import CreateTestCaseLeafDialog from "../../../components/dialogs/create-test-case-leaf";
-import FormControl from "@material-ui/core/FormControl";
-import {InputBase, ListItemSecondaryAction} from "@material-ui/core";
-import InputAdornment from "@material-ui/core/InputAdornment";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import {ALink} from "../../../components/link";
-import Dialog from "@material-ui/core/Dialog";
 import RootRef from "@material-ui/core/RootRef";
 import ReorderIcon from "@material-ui/icons/Reorder";
+import EditIcon from "@material-ui/icons/Edit";
+import {IconButton} from "@material-ui/core";
 
 interface TreeParams {
   project: Schemas.Project,
@@ -193,6 +191,7 @@ function Tree(params: TreeParams, el?) {
   ];
 
   const [creatingFolder, setCreatingFolder] = useState<boolean>(false)
+  const [editingFolderId, setEditingFolderId] = useState<string|null>(null)
   const [creatingTestCase, setCreatingTestCaseFolder] = useState<boolean>(false)
   const [currentLeaf, setCurrentLeaf] = useState<Schemas.Tree>(params.selectedLeaf)
   const [treeLeaves, setTreeLeaves] = useState<Schemas.Tree[]>([])
@@ -413,7 +412,11 @@ function Tree(params: TreeParams, el?) {
                         </TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>{row.elementsAmount}</TableCell>
                         <TableCell align="center" className={classes.folderRowCell}>{row.createdAt}</TableCell>
-                        <TableCell align="center" className={classes.folderRowCell}>actions</TableCell>
+                        <TableCell align="center" className={classes.folderRowCell}>
+                          <IconButton onClick={ () => setEditingFolderId(row.id) }>
+                            <EditIcon />
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -476,6 +479,12 @@ function Tree(params: TreeParams, el?) {
         handleClose={() => setCreatingFolder(false)}
         treeLeafId={currentLeaf.id}
         onFolderCreated={reloadFolders}
+      />
+      <EditProjectTreeLeafDialog
+        opened={editingFolderId != null}
+        handleClose={() => setEditingFolderId(null)}
+        treeLeafId={editingFolderId}
+        onFolderEdited={reloadFolders}
       />
       <CreateTestCaseLeafDialog
         opened={creatingTestCase}
