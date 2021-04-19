@@ -2,6 +2,7 @@
   "common": {
     "create": "Create",
     "cancel": "Cancel",
+    "update": "Update",
     "createAndEditing": "Create and start editing"
   },
   "createProjectTreeLeaf": {
@@ -9,6 +10,12 @@
     "title": "New folder",
     "description": "Creating new folder",
     "created": "Folder created"
+  },
+  "editProjectTreeLeaf": {
+    "folderName": "Folder name",
+    "title": "Edit folder name",
+    "description": "Editing new folder",
+    "edited": "Folder edited"
   },
   "createTestCaseLeaf": {
     "title": "New test case",
