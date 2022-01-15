@@ -1,117 +1,102 @@
-import {ApiResponse, create} from 'apisauce';
-import {ApiConnectionError} from "../helpers/exceptions";
 import {Api} from '@test-control/server-api-contracts'
+import {apiErrorHandler, getDefaultUserConnection} from "./api-services/base";
+import authApis from './api-services/auth';
+import {NextPageContext} from "next";
 
-const connection = create({
-  baseURL: process.env.TEST_CONTROL_DASHBOARD_API_URL + '/api/v1',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-
-export const apiErrorHandler  = async <T,U=T>(pResponse: Promise<ApiResponse<T,U>>) : Promise<T> => {
-  const response = await pResponse;
-
-  if(response.ok) {
-    return response.data;
-  }
-
-  throw new ApiConnectionError(
-    response
-  )
-}
-
-export const apiBackend = {
+export const apiBackend = (ctx?: NextPageContext) => ({
+  auth: authApis,
   project: {
     create: async (data) => {
-      return apiErrorHandler(connection.post<Api.CreateProject.ResponseBody>('/projects', data))
+      return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.CreateProject.ResponseBody>('/projects', data))
     },
     update: async (projectId, data) => {
-      return apiErrorHandler(connection.post<Api.UpdateProject.ResponseBody>('/projects/' + projectId, data))
+      return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.UpdateProject.ResponseBody>('/projects/' + projectId, data))
     },
     list: async(page, perPage) => {
-      return apiErrorHandler(connection.get<Api.ListProjects.ResponseBody>('/projects', {
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.ListProjects.ResponseBody>('/projects', {
           page: page,
           perPage: perPage
       }))
     },
     get: async(projectId) => {
-      return apiErrorHandler(connection.get<Api.GetProject.ResponseBody>('/projects/' + projectId));
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetProject.ResponseBody>('/projects/' + projectId));
     },
     getTreeRoot: async(projectId) => {
-      return apiErrorHandler(connection.get<Api.GetProjectTreeRoot.ResponseBody>('/projects/' + projectId + '/tree-root'))
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetProjectTestSuiteRoot.ResponseBody>('/projects/' + projectId + '/test-suite-root'))
     }
   },
   testCase: {
     create: async (data: Api.CreateTestCase.RequestBody) => {
-      return apiErrorHandler(connection.post<Api.CreateTestCase.ResponseBody>('/test-cases', data));
+      return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.CreateTestCase.ResponseBody>('/test-cases', data));
     },
     get: async (testCaseId) => {
-      return apiErrorHandler(connection.get<Api.GetTestCase.ApplicationJson200ResponseBody>('/test-cases/' + testCaseId))
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetTestCase.ApplicationJson200ResponseBody>('/test-cases/' + testCaseId))
     },
     update: async (testCaseId, data) => {
-      return apiErrorHandler(connection.patch<Api.UpdateTestCases.ResponseBody>('/test-cases/' + testCaseId, data))
+      return apiErrorHandler(getDefaultUserConnection(ctx).patch<Api.UpdateTestCases.ResponseBody>('/test-cases/' + testCaseId, data))
     },
     move: async (testCaseId, data) => {
-      return apiErrorHandler(connection.post<Api.MoveTestCase.ResponseBody>('/test-cases/' + testCaseId + '/move', data))
+      return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.MoveTestCase.ResponseBody>('/test-cases/' + testCaseId + '/move', data))
     },
     preconditions: {
       update: async(preconditionId, data) => {
-        return apiErrorHandler(connection.patch<Api.UpdateTestCasePreconditions.ResponseBody>('/test-case-preconditions/' + preconditionId, data))
+        return apiErrorHandler(getDefaultUserConnection(ctx).patch<Api.UpdateTestCasePreconditions.ResponseBody>('/test-case-preconditions/' + preconditionId, data))
       },
       get: async (testCaseId)  => {
-        return apiErrorHandler(connection.get<Api.ListTestCasePreconditions.ResponseBody>('/test-cases/' + testCaseId + "/preconditions"))
+        return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.ListTestCasePreconditions.ResponseBody>('/test-cases/' + testCaseId + "/preconditions"))
       },
       delete: async (preconditionId) => {
-        return apiErrorHandler(connection.delete<Api.DeleteTestCasePreconditions.ResponseBody>('/test-case-preconditions/' + preconditionId))
+        return apiErrorHandler(getDefaultUserConnection(ctx).delete<Api.DeleteTestCasePreconditions.ResponseBody>('/test-case-preconditions/' + preconditionId))
       },
       create: async (testCaseId,data)  => {
-        return apiErrorHandler(connection.post<Api.CreateTestCasePreconditions.ResponseBody>('/test-cases/' + testCaseId + "/preconditions", data))
+        return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.CreateTestCasePreconditions.ResponseBody>('/test-cases/' + testCaseId + "/preconditions", data))
       }
     },
     steps: {
       update: async(stepId, data) => {
-        return apiErrorHandler(connection.patch<Api.UpdateTestCaseSteps.ResponseBody>('/test-case-steps/' + stepId, data))
+        return apiErrorHandler(getDefaultUserConnection(ctx).patch<Api.UpdateTestCaseSteps.ResponseBody>('/test-case-steps/' + stepId, data))
       },
       get: async (stepId) => {
-        return apiErrorHandler(connection.get<Api.ListTestCaseSteps.ResponseBody>('/test-cases/' + stepId + "/steps"))
+        return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.ListTestCaseSteps.ResponseBody>('/test-cases/' + stepId + "/steps"))
       },
       delete: async (stepId) => {
-        return apiErrorHandler(connection.delete<Api.DeleteTestCaseSteps.ResponseBody>('/test-case-steps/' + stepId))
+        return apiErrorHandler(getDefaultUserConnection(ctx).delete<Api.DeleteTestCaseSteps.ResponseBody>('/test-case-steps/' + stepId))
       },
       create: async (stepId,data) => {
-        return apiErrorHandler(connection.post<Api.CreateTestCaseSteps.ResponseBody>('/test-cases/' + stepId + "/steps", data))
+        return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.CreateTestCaseSteps.ResponseBody>('/test-cases/' + stepId + "/steps", data))
       }
     }
   },
   trees: {
     get: async (treeId) => {
-      return apiErrorHandler(connection.get<Api.GetTree.ApplicationJson200ResponseBody>('/trees/' + treeId))
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetTestSuite.ApplicationJson200ResponseBody>('/test-suites/' + treeId))
     },
-    update: async (treeId: string, data: Api.UpdateTreeLeaf.RequestBody) => {
-      return apiErrorHandler(connection.patch<Api.UpdateTreeLeaf.ApplicationJson200ResponseBody>('/trees/' + treeId, data))
+    update: async (treeId: string, data: Api.UpdateTestSuiteLeaf.RequestBody) => {
+      return apiErrorHandler(getDefaultUserConnection(ctx).patch<Api.UpdateTestSuiteLeaf.ApplicationJson200ResponseBody>('/test-suites/' + treeId, data))
     },
     getLeaves: async (treeId, pageNumber?:number, rowsPerPage?: number) => {
-      return apiErrorHandler(connection.get<Api.ListTreeLeaves.ResponseBody>('/trees/' + treeId + '/leaves', {
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.ListTestSuiteLeaves.ResponseBody>('/test-suites/' + treeId + '/leaves', {
         page: pageNumber || 0,
         perPage: rowsPerPage || 10
       }))
     },
     getTestCases: async(treeId, pageNumber?:number, rowsPerPage?: number) => {
-      return apiErrorHandler(connection.get<Api.ListTreeTestCases.ResponseBody>('/trees/' + treeId + '/test-cases', {
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.ListTestSuiteTestCases.ApplicationJson200ResponseBody>('/test-suites/' + treeId + '/test-cases', {
         page: pageNumber || 0,
         perPage: rowsPerPage || 10
       }))
     },
     create: async (treeId, data) => {
-      return apiErrorHandler(connection.post<Api.CreateTreeLeaf.ResponseBody>('/trees/' + treeId, data))
+      return apiErrorHandler(getDefaultUserConnection(ctx).post<Api.CreateTestSuiteLeaf.ApplicationJson201ResponseBody>('/test-suites/' + treeId, data))
     },
     getRootPath: async(leafId) => {
-      return apiErrorHandler(connection.get<Api.GetTreeRootPath.ResponseBody>('/trees/' + leafId + '/root-path'))
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetTestSuiteRootPath.ApplicationJson200ResponseBody>('/test-suites/' + leafId + '/root-path'))
     },
     getProject: async(leafId) => {
-      return apiErrorHandler(connection.get<Api.GetTreeGetProject.ApplicationJson200ResponseBody>('/trees/' + leafId + '/get-project'))
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetTestSuiteGetProject.ApplicationJson200ResponseBody>('/test-suites/' + leafId + '/get-project'))
+    },
+    getParent: async(leafId) => {
+      return apiErrorHandler(getDefaultUserConnection(ctx).get<Api.GetTestSuiteParent.ApplicationJson200ResponseBody>('/test-suites/' + leafId + '/get-parent'))
     }
   }
-}
+})
